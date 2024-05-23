@@ -1,6 +1,11 @@
+import random
+
 class Quixo:
     def __init__(self):
         self.board = [['.'] * 5 for _ in range(5)]
+
+        self.player = 'X'
+        self.opponent = 'O'
 
         # Diccionario 
 
@@ -48,9 +53,72 @@ class Quixo:
         if all(self.board[i][i] == 'O' for i in range(5)) or all(self.board[i][4-i] == 'O' for i in range(5)):
             return 'O'
         return None
+    
+    def choose_mode(self):
+        while True:
+            mode = input("Elige un modo de juego: (1) Player vs Player (2) Player vs Computer: ")
+            if mode in ['1', '2']:
+                self.mode = 'PvP' if mode == '1' else 'PvE'
+                break
+            else:
+                print("Opción inválida.")
+    
+    def choose_piece(self):
+        while True:
+            piece = input("Elige tu pieza: (X o O): ").upper()
+            if piece in ['X', 'O']:
+                self.player = piece
+                self.opponent = 'O' if piece == 'X' else 'X'
+                break
+            else:
+                print("Opción inválida.")
 
     def play(self):
-        pass
+        self.choose_mode()
+        self.choose_piece()
+        while not self.check_win():
+            self.print_board()
+            if self.player == 'X' or self.mode == 'PvP':
+                row, col, move = self.get_player_move()
+                self.make_move(row, col, move, self.player)
+            else:
+                self.bot_move()
+            if self.check_win():
+                self.print_board()
+                print(f"Player {self.check_win()} wins!")
+                break
+            self.switch_player()
+
+    def switch_player(self):
+        self.player, self.opponent = self.opponent, self.player
+
+
+    def make_move(self, row, col, move, piece):
+        if move == 'up':
+            self.up(row, col, piece)
+        elif move == 'down':
+            self.down(row, col, piece)
+        elif move == 'left':
+            self.left(row, col, piece)
+        elif move == 'right':
+            self.right(row, col, piece)
+
+    def bot_move(self):
+        row, col, move = random.choice([(i, j, m) for i in range(5) for j in range(5) for m in ['up', 'down', 'left', 'right']])
+        self.make_move(row, col, move, self.opponent)
+    
+    def get_player_move(self):
+        while True:
+            try:
+                row = int(input("Ingresa la fila (0-4): "))
+                col = int(input("Ingresa la columna (0-4): "))
+                move = input("Ingresa el movimiento (up, down, left, right): ").lower()
+                if row in range(5) and col in range(5) and move in ['up', 'down', 'left', 'right']:
+                    return row, col, move
+                else:
+                    print("Movimiento inválido.")
+            except ValueError:
+                print("Error. Ingresa números para la fila y la columna.")
      
     def print_board(self):
         for i in self.board:
@@ -58,8 +126,5 @@ class Quixo:
 
 game = Quixo()
 
-game.print_board()
-print(" ")
+game.play()
 
-result = game.check_win()
-print(result)
