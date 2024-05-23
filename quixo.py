@@ -2,7 +2,13 @@ import random
 
 class Quixo:
     def __init__(self):
-        self.board = [['.'] * 5 for _ in range(5)]
+        #self.board = [['.'] * 5 for _ in range(5)]
+
+        self.board = [['.', '0', '.', '0','.'],
+                      ['.', '.', '.', '.','.'],
+                      ['.', '.', '.', '.','.'],
+                      ['.', '.', '.', '.','.'],
+                      ['.', '.', '.', '.','.'],]
 
         self.player = 'X'
         self.opponent = 'O'
@@ -13,29 +19,31 @@ class Quixo:
     def up(self, row, col, piece):
         if row == 4:
             return False
-        for i in range(row, 0, -1):
-            self.board[i][col] = self.board[i - 1][col]
+        for i in range(row, 4):
+            self.board[i][col] = self.board[i + 1][col]
         self.board[4][col] = piece
 
     def down(self, row, col, piece):
         if row == 0:
             return False
-        for i in range(row, 4):
-            self.board[i][col] = self.board[i + 1][col]
+        for i in range(row, -1, -1):
+            print(i)
+            self.board[i][col] = self.board[i - 1][col]
         self.board[0][col] = piece
 
     def left(self, row, col, piece):
         if col == 4:
             return False
-        for i in range(col, 0, -1):
-            self.board[row][i] = self.board[row][i - 1]
+        for i in range(col, 4):
+            self.board[row][i] = self.board[row][i + 1]
         self.board[row][4] = piece
 
     def right(self, row, col, piece):
         if col == 0:
             return False
-        for i in range(col, 4):
-            self.board[row][i] = self.board[row][i + 1]
+        for i in range(col, -1, -1):
+            print(i)
+            self.board[row][i] = self.board[row][i - 1]
         self.board[row][0] = piece
     # ------------------------------------------------------------
     
@@ -103,6 +111,7 @@ class Quixo:
         elif move == 'right':
             self.right(row, col, piece)
 
+
     def bot_move(self):
         row, col, move = random.choice([(i, j, m) for i in range(5) for j in range(5) for m in ['up', 'down', 'left', 'right']])
         self.make_move(row, col, move, self.opponent)
@@ -119,6 +128,10 @@ class Quixo:
                     print("Movimiento inválido.")
             except ValueError:
                 print("Error. Ingresa números para la fila y la columna.")
+
+    def check_move(self, row, col):
+        if(self.board[row][col] ):
+            pass
      
     def print_board(self):
         for i in self.board:
@@ -126,5 +139,8 @@ class Quixo:
 
 game = Quixo()
 
-game.play()
+game.print_board()
+game.right(0, 2, 'X')
 
+print('/n')
+game.print_board()
