@@ -133,8 +133,4 @@ class Quixo:
 
 game = Quixo()
 
-game.print_board()
-game.right(0, 2, 'X')
-
-print('/n')
-game.print_board()
+game.play()
