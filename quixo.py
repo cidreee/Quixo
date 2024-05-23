@@ -2,13 +2,7 @@ import random
 
 class Quixo:
     def __init__(self):
-        #self.board = [['.'] * 5 for _ in range(5)]
-
-        self.board = [['.', '0', '.', '0','.'],
-                      ['.', '.', '.', '.','.'],
-                      ['.', '.', '.', '.','.'],
-                      ['.', '.', '.', '.','.'],
-                      ['.', '.', '.', '.','.'],]
+        self.board = [['.'] * 5 for _ in range(5)]
 
         self.player = 'X'
         self.opponent = 'O'
