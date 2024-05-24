@@ -93,6 +93,10 @@ class Quixo:
 
     def switch_player(self):
         self.player, self.opponent = self.opponent, self.player
+    
+    def is_valid_move(self, row, col, piece):
+        current_pice, flipped = self.board[row][col]
+        return flipped == '.' or current_pice == piece
 
 
     def make_move(self, row, col, move, piece):
@@ -109,23 +113,36 @@ class Quixo:
     def bot_move(self):
         row, col, move = random.choice([(i, j, m) for i in range(5) for j in range(5) for m in ['up', 'down', 'left', 'right']])
         self.make_move(row, col, move, self.opponent)
+
     
     def get_player_move(self):
         while True:
             try:
                 row = int(input("Ingresa la fila (0-4): "))
                 col = int(input("Ingresa la columna (0-4): "))
-                move = input("Ingresa el movimiento (up, down, left, right): ").lower()
-                if row in range(5) and col in range(5) and move in ['up', 'down', 'left', 'right']:
-                    return row, col, move
+
+                if row in range(5) and col in range(5):
+                    if self.is_edge(row, col) and self.is_valid_move(row, col, self.player):
+                        break
+                    else:
+                        print("Solo puedes tomar piezas de las orillas que no hayan sido volteadas o sean de tu pieza.")
                 else:
-                    print("Movimiento inválido.")
+                    print("Posición inválida. Debe estar entre 0 y 4.")
+                    
             except ValueError:
                 print("Error. Ingresa números para la fila y la columna.")
 
-    def check_move(self, row, col):
-        if(self.board[row][col] ):
-            pass
+        while True:
+            move = input("Ingresa el movimiento (up, down, left, right): ").lower()
+            if move in ['up', 'down', 'left', 'right']:
+                return row, col, move
+            else:
+                print("Movimiento inválido. Debe ser 'up', 'down', 'left' o 'right'.")
+
+    
+    def is_edge(self, row, col):
+        return row == 0 or row == 4 or col == 0 or col == 4
+
      
     def print_board(self):
         for i in self.board:
@@ -133,4 +150,8 @@ class Quixo:
 
 game = Quixo()
 
-game.play()
+game.print_board()
+game.right(0, 2, 'X')
+
+print('/n')
+game.print_board()
