@@ -89,16 +89,50 @@ class QuixoBot:
 
     def evaluate_board(self, board):
         score = 0
+
+        # Evaluar filas y columnas
         for i in range(5):
-            row_score = sum(board[i])
-            col_score = sum(board[j][i] for j in range(5))
+            row_score = sum(board[i]) * (1 + 0.1 * (i == 2 or i == 3))  # Bono por casillas centrales
+            col_score = sum(board[j][i] for j in range(5)) * (1 + 0.1 * (i == 2 or i == 3))
             score += row_score + col_score
 
-        diag1_score = sum(board[i][i] for i in range(5))
-        diag2_score = sum(board[i][4 - i] for i in range(5))
+        # Evaluar diagonales
+        diag1_score = sum(board[i][i] for i in range(5)) * 1.1  # Bono por diagonal central
+        diag2_score = sum(board[i][4 - i] for i in range(5)) * 1.1
         score += diag1_score + diag2_score
 
+        # Penalizar líneas del oponente
+        opponent_symbol = -1 if self.symbol == 1 else 1
+        for i in range(5):
+            # Penalizar por filas del oponente
+            row_opponent_count = sum(1 for j in range(5) if board[i][j] == opponent_symbol)
+            if row_opponent_count == 3:
+                score -= 2  # Penalizar por 3 símbolos del oponente
+            elif row_opponent_count == 4:
+                score -= 4  # Penalizar más por 4 símbolos del oponente
+
+            # Penalizar por columnas del oponente
+            col_opponent_count = sum(1 for j in range(5) if board[j][i] == opponent_symbol)
+            if col_opponent_count == 3:
+                score -= 2
+            elif col_opponent_count == 4:
+                score -= 4
+
+        # Penalizar por diagonales del oponente
+        diag1_opponent_count = sum(1 for i in range(5) if board[i][i] == opponent_symbol)
+        if diag1_opponent_count == 3:
+            score -= 2
+        elif diag1_opponent_count == 4:
+            score -= 4
+
+        diag2_opponent_count = sum(1 for i in range(5) if board[i][4 - i] == opponent_symbol)
+        if diag2_opponent_count == 3:
+            score -= 2
+        elif diag2_opponent_count == 4:
+            score -= 4
+
         return score * self.symbol
+
 
     def make_move(self, board, row, col, move):
         if move == 'U' and self.valid_move(board, 'U', row, col):
@@ -112,13 +146,13 @@ class QuixoBot:
         return False
 
     def valid_move(self, board, direction, row, col):
-        if direction == 'U' and row > 0 and (board[row - 1][col] == 0 or board[row - 1][col] == self.symbol):
+        if direction == 'U' and row > 0 and (board[row ][col] == 0 or board[row][col] == self.symbol):
             return True
-        if direction == 'D' and row < 4 and (board[row + 1][col] == 0 or board[row + 1][col] == self.symbol):
+        if direction == 'D' and row < 4 and (board[row][col] == 0 or board[row][col] == self.symbol):
             return True
-        if direction == 'L' and col > 0 and (board[row][col - 1] == 0 or board[row][col - 1] == self.symbol):
+        if direction == 'L' and col > 0 and (board[row][col] == 0 or board[row][col] == self.symbol):
             return True
-        if direction == 'R' and col < 4 and (board[row][col + 1] == 0 or board[row][col + 1] == self.symbol):
+        if direction == 'R' and col < 4 and (board[row][col] == 0 or board[row][col] == self.symbol):
             return True
         return False
 
@@ -127,6 +161,7 @@ class QuixoBot:
     def reset(self, symbol):
         self.symbol = symbol
         self.board = [[0] * 5 for _ in range(5)]
+
 
     def play_turn(self, board):
         self.board = board
