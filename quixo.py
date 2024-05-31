@@ -1,178 +1,139 @@
-import random
+import copy
 
-class Quixo:
-    def __init__(self):
-        self.board = [['.'] * 5 for _ in range(5)]
+class QuixoBot:
+    def __init__(self, symbol):
+        self.name = "nanabot"
+        self.symbol = symbol
+        self.board = [[0] * 5 for _ in range(5)]
+        self.movements = {
+            'U': self.up, 
+            'D': self.down,
+            'L': self.left,
+            'R': self.right,
+        }
 
-        self.player = 'X'
-        self.opponent = 'O'
+    def up(self, board, row, col):
+        for i in range(row, 0, -1):
+            board[i][col] = board[i - 1][col]
+        board[0][col] = self.symbol
+        return True
 
-        # Diccionario 
-
-    #-------------- movimientos ---------------------------------
-    def up(self, row, col, piece):
-        if row == 4:
-            return False
+    def down(self, board, row, col):
         for i in range(row, 4):
-            self.board[i][col] = self.board[i + 1][col]
-        self.board[4][col] = piece
+            board[i][col] = board[i + 1][col]
+        board[4][col] = self.symbol
         return True
 
-    def down(self, row, col, piece):
-        if row == 0:
-            return False
-        for i in range(row, -1, -1):
-            print(i)
-            self.board[i][col] = self.board[i - 1][col]
-        self.board[0][col] = piece
+    def left(self, board, row, col):
+        for i in range(col, 0, -1):
+            board[row][i] = board[row][i - 1]
+        board[row][0] = self.symbol
         return True
 
-    def left(self, row, col, piece):
-        if col == 4:
-            return False
+    def right(self, board, row, col):
         for i in range(col, 4):
-            self.board[row][i] = self.board[row][i + 1]
-        self.board[row][4] = piece
+            board[row][i] = board[row][i + 1]
+        board[row][4] = self.symbol
         return True
 
-    def right(self, row, col, piece):
-        if col == 0:
-            return False
-        for i in range(col, -1, -1):
-            print(i)
-            self.board[row][i] = self.board[row][i - 1]
-        self.board[row][0] = piece
-        return True
-    # ------------------------------------------------------------
-    
-    def check_win(self):
-        # Revisamos las verticales u horizontales
+    def check_win(self, board):
         for i in range(5):
-            if all(self.board[i][j] == 'X' for j in range(5)) or all(self.board[j][i] == 'X' for j in range(5)):
-                return 'X'
-            if all(self.board[i][j] == 'O' for j in range(5)) or all(self.board[j][i] == 'O' for j in range(5)):
-                return 'O'
-            
-        # Revisamos las diagonales
-        if all(self.board[i][i] == 'X' for i in range(5)) or all(self.board[i][4-i] == 'X' for i in range(5)):
-            return 'X'
-        if all(self.board[i][i] == 'O' for i in range(5)) or all(self.board[i][4-i] == 'O' for i in range(5)):
-            return 'O'
+            if all(board[i][j] == -1 for j in range(5)) or all(board[j][i] == -1 for j in range(5)):
+                return -1
+            if all(board[i][j] == 1 for j in range(5)) or all(board[j][i] == 1 for j in range(5)):
+                return 1
+
+        if all(board[i][i] == -1 for i in range(5)) or all(board[i][4-i] == -1 for i in range(5)):
+            return -1
+        if all(board[i][i] == 1 for i in range(5)) or all(board[i][4-i] == 1 for i in range(5)):
+            return 1
         return None
-    
-    def choose_mode(self):
-        while True:
-            mode = input("Elige un modo de juego: \n(1) Player vs Player (2) Player vs Computer: ")
-            if mode in ['1', '2']:
-                self.mode = 'PvP' if mode == '1' else 'PvE'
-                break
-            else:
-                print("Opción inválida.")
-    
-    def choose_piece(self):
-        while True:
-            piece = input("Elige tu pieza: (X o O): ").upper()
-            if piece in ['X', 'O']:
-                self.player = piece
-                self.opponent = 'O' if piece == 'X' else 'X'
-                break
-            else:
-                print("Opción inválida.")
 
-    def play(self):
-        self.choose_mode()
-        print('\n')
-        self.choose_piece()
+    def minimax(self, board, player, depth, alpha, beta):
+        winner = self.check_win(board)
+        if winner is not None:
+            return winner * player, None
+        if depth == 2:
+            return self.evaluate_board(board), None
 
-        while not self.check_win():
-            print('\n')
-            self.print_board()
-            print('\n')
-            print(f"\nTurno del jugador '{self.player}'")
+        best_move = None
+        if player == self.symbol:
+            best_score = float('-inf')
+        else:
+            best_score = float('inf')
 
-            if self.player == 'X' or self.mode == 'PvP':
-                row, col, move = self.get_player_move()
-                while not self.make_move(row, col, move, self.player):
-                    print('\nEl movimiento no se puede realizar desde esta posición. Vuelve a intentarlo.\n')
-                    move = self.get_move_direction()    
-                          
-
-            else:
-                self.bot_move()
-                
-            if self.check_win():
-                print('\n')
-                self.print_board()
-                print(f"\nJugador '{self.check_win()}' wins!")
-                break
-            self.switch_player()
-
-    def switch_player(self):
-        self.player, self.opponent = self.opponent, self.player
-    
-    def is_valid_position(self, row, col, piece):
-        current_pice = self.board[row][col]
-        return current_pice == '.' or current_pice == piece
+            # Iterar solo sobre el borde del tablero
+        for row in range(5):
+            for col in range(5):
+                if row == 0 or row == 4 or col == 0 or col == 4:  # Solo considerar el borde del tablero
+                    if board[row][col] == 0 or board[row][col] == player:
+                        for move in self.movements.keys():
+                            board_copy = copy.deepcopy(board)
+                            if self.make_move(board_copy, row, col, move):
+                                score = self.minimax(board_copy, -player, depth + 1, alpha, beta)[0]
+                                if player == self.symbol:
+                                    if score > best_score:
+                                        best_score = score
+                                        best_move = (row, col, move)
+                                    alpha = max(alpha, score)
+                                else:
+                                    if score < best_score:
+                                        best_score = score
+                                        best_move = (row, col, move)
+                                    beta = min(beta, score)
+                                if beta <= alpha:
+                                    break
+        # Devolver el mejor puntaje y el mejor movimiento
+        return best_score, best_move
 
 
-    def make_move(self, row, col, move, piece):
-        if move == 'up':
-            return self.up(row, col, piece)
-        elif move == 'down':
-            return self.down(row, col, piece)
-        elif move == 'left':
-            return self.left(row, col, piece)
-        elif move == 'right':
-            return self.right(row, col, piece)
+    def evaluate_board(self, board):
+        score = 0
+        for i in range(5):
+            row_score = sum(board[i])
+            col_score = sum(board[j][i] for j in range(5))
+            score += row_score + col_score
+
+        diag1_score = sum(board[i][i] for i in range(5))
+        diag2_score = sum(board[i][4 - i] for i in range(5))
+        score += diag1_score + diag2_score
+
+        return score * self.symbol
+
+    def make_move(self, board, row, col, move):
+        if move == 'U' and self.valid_move(board, 'U', row, col):
+            return self.up(board, row, col)
+        elif move == 'D' and self.valid_move(board, 'D', row, col):
+            return self.down(board, row, col)
+        elif move == 'L' and self.valid_move(board, 'L', row, col):
+            return self.left(board, row, col)
+        elif move == 'R' and self.valid_move(board, 'R', row, col):
+            return self.right(board, row, col)
+        return False
+
+    def valid_move(self, board, direction, row, col):
+        if direction == 'U' and row > 0 and (board[row - 1][col] == 0 or board[row - 1][col] == self.symbol):
+            return True
+        if direction == 'D' and row < 4 and (board[row + 1][col] == 0 or board[row + 1][col] == self.symbol):
+            return True
+        if direction == 'L' and col > 0 and (board[row][col - 1] == 0 or board[row][col - 1] == self.symbol):
+            return True
+        if direction == 'R' and col < 4 and (board[row][col + 1] == 0 or board[row][col + 1] == self.symbol):
+            return True
+        return False
 
 
-    def bot_move(self):
-        row, col, move = random.choice([(i, j, m) for i in range(5) for j in range(5) for m in ['up', 'down', 'left', 'right']])
-        self.make_move(row, col, move, self.opponent)
 
+    def reset(self, symbol):
+        self.symbol = symbol
+        self.board = [[0] * 5 for _ in range(5)]
 
-    def get_move_direction(self):
-            valid_moves = ['up', 'down', 'left', 'right']
-            while True:
-                move = input("Ingresa el movimiento (up, down, left, right): ").lower()
-                if move in valid_moves:
-                    return move
-                else:
-                    print("Movimiento inválido. Debe ser 'up', 'down', 'left' o 'right'.")
-
-    
-    def get_player_move(self):
-        def get_coordinate(prompt):
-            while True:
-                try:
-                    value = int(input(prompt))
-                    if value in range(5):
-                        return value
-                    else:
-                        print("Posición inválida. Debe estar entre 0 y 4.")
-                except ValueError:
-                    print("Error. Ingresa un número válido.")
-
-        while True:
-            row = get_coordinate("Ingresa la fila (0-4): ")
-            col = get_coordinate("Ingresa la columna (0-4): ")
-
-            if self.is_edge(row, col) and self.is_valid_position(row, col, self.player):
-                break
-            else:
-                print("Solo puedes tomar piezas de las orillas que no hayan sido volteadas o sean de tu pieza.")
-
-        move = self.get_move_direction()
-        return row, col, move
-
-    
-    def is_edge(self, row, col):
-        return row == 0 or row == 4 or col == 0 or col == 4
-     
-    def print_board(self):
-        for i in self.board:
-            print(i)
-
-game = Quixo()
-
-game.play()
+    def play_turn(self, board):
+        self.board = board
+        best_move = self.minimax(board, self.symbol, 0, float('-inf'), float('inf'))
+        if best_move[1] is not None:
+            row, col, move = best_move[1]
+            print(best_move)
+            if self.make_move(board, row, col, move):
+                return board
+        return board  # En caso de no encontrar un movimiento válido, devolver el tablero tal como está
