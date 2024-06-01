@@ -85,6 +85,8 @@ class QuixoBot:
                                     break
         # Devolver el mejor puntaje y el mejor movimiento
         return best_score, best_move
+    
+
 
 
     def evaluate_board(self, board):
@@ -96,10 +98,22 @@ class QuixoBot:
             col_score = sum(board[j][i] for j in range(5)) * (1 + 0.1 * (i == 2 or i == 3))
             score += row_score + col_score
 
+            # Evaluar líneas de símbolos separados
+            row_count = sum(1 for j in range(5) if board[i][j] == self.symbol)
+            col_count = sum(1 for j in range(5) if board[j][i] == self.symbol)
+            score += 0.5 * row_count  # Bono por tener símbolos separados en la fila
+            score += 0.5 * col_count  # Bono por tener símbolos separados en la columna
+
         # Evaluar diagonales
         diag1_score = sum(board[i][i] for i in range(5)) * 1.1  # Bono por diagonal central
         diag2_score = sum(board[i][4 - i] for i in range(5)) * 1.1
         score += diag1_score + diag2_score
+
+        # Evaluar símbolos separados en diagonales
+        diag1_count = sum(1 for i in range(5) if board[i][i] == self.symbol)
+        diag2_count = sum(1 for i in range(5) if board[i][4 - i] == self.symbol)
+        score += 0.5 * diag1_count  # Bono por tener símbolos separados en la primera diagonal
+        score += 0.5 * diag2_count  # Bono por tener símbolos separados en la segunda diagonal
 
         # Penalizar líneas del oponente
         opponent_symbol = -1 if self.symbol == 1 else 1
