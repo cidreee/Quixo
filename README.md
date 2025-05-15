@@ -48,3 +48,28 @@ board = [[0]*5 for _ in range(5)]
 
 # Ask the bot to make a move
 new_board = bot.play_turn(board)
+```
+---
+
+## Game Rules Summary (Simplified)
+1. The board is 5x5.
+2. Each player can push only edge cubes.
+3. You can only move empty cubes or your own symbol.
+4. The pushed piece moves inward, shifting the entire row or column.
+5. First to align 5 identical symbols in a row, column, or diagonal wins.
+
+--- 
+
+## AI Strategy 
+The bot uses the Minimax algorithm with alpha-beta pruning up to depth 2.
+The board evaluation function prioritizes:
+
+- More of its own symbols aligned
+- Center dominance
+- Spaced presence of its own pieces
+- Avoiding opponent lines of 3 or 4
+- Blocking imminent wins
+
+The bot only considers legal edge moves and simulates all valid push directions.
+
+--- 
