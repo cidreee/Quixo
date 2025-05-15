@@ -16,14 +16,6 @@ QuixoBot is a Python implementation of an AI agent for the board game [Quixo]([h
 
 ---
 
-## Project Structure
-quixobot/
-├── quixo_bot.py # Core AI logic (QuixoBot class)
-├── README.md # Project overview
-
-
----
-
 ## How It Works
 
 - The bot chooses only **edge tiles** to push into the board, in any of four directions (`U`, `D`, `L`, `R`).
@@ -73,3 +65,5 @@ The board evaluation function prioritizes:
 The bot only considers legal edge moves and simulates all valid push directions.
 
 --- 
+
+
